@@ -16,3 +16,7 @@
     ```
     git reset --soft HEAD~1
     ```
+- Add heavy file to .gitattributes
+    ```
+    git add path/to/large-file.zip
+    ```
