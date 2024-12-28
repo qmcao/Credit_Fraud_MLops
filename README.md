@@ -10,3 +10,9 @@
     ```
     conda activate venv/
     ```
+
+## Git
+- Revert recent commit
+    ```
+    git reset --soft HEAD~1
+    ```
