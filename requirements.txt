@@ -9,4 +9,6 @@ dill
 flask
 imbalanced-learn
 dask
+imblearn
+statsmodels
 #-e .

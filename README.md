@@ -18,7 +18,7 @@
     ```
 - Add heavy file to .gitattributes
     ```
-    git add path/to/large-file.zip
+    git lfs track "path/to/file"
     ```
 
 
