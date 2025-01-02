@@ -144,3 +144,65 @@ You now have a **comprehensive** end-to-end solution for fraud detection, levera
 
 
 
+
+
+# Classification Report (Threshold = 0.5)
+
+
+
+## 1. Explanation in Simple Terms
+
+- **Accuracy (13%)**  
+  Overall, the model is correct only 13% of the time. Because most data points (nearly 198k) are Non-Fraud, predicting “Fraud” too often hurts accuracy.
+
+- **Precision**  
+  - **Non-Fraud (0.99)**: Of the samples predicted *Non-Fraud*, 99% really are *Non-Fraud*.  
+  - **Fraud (0.01)**: Of the samples predicted *Fraud*, only 1% are truly *Fraud* (i.e., 99% are false alarms).
+
+- **Recall**  
+  - **Non-Fraud (0.12)**: Of all actual Non-Fraud cases, the model only correctly labels 12% of them as Non-Fraud. It mistakenly flags most as Fraud.  
+  - **Fraud (0.88)**: Of all actual Fraud cases, 88% are caught by the model (it has high recall for Fraud).
+
+- **F1-Score**  
+  - **Non-Fraud (0.22)**: Because recall is low (0.12), the F1 drops.  
+  - **Fraud (0.02)**: Despite a high recall (0.88), the model’s Fraud precision is very low (0.01), so the combined F1 is just 0.02.
+
+## 2. Confusion Matrix Concept
+
+|                     | Predicted Non-Fraud | Predicted Fraud | Total (Actual)  |
+|---------------------|---------------------|-----------------|-----------------|
+| **Actual Non-Fraud** | TN (23,700) | FP (174,094.)  | 197,794         |
+| **Actual Fraud**     | FN (265)| TP (1,941)   | 2,206           |
+| **Total (Predicted)** | 	23,965                  |      176,035           | 200,000         |
+
+From such a matrix, we calculate:
+
+### Accuracy
+
+\[
+\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{All Samples}}
+\]
+
+### Precision (for a class)
+
+\[
+\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
+\]
+
+### Recall (for a class)
+
+\[
+\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
+\]
+
+### F1 Score
+
+\[
+F1 = 2 \times \frac{(\text{Precision} \times \text{Recall})}{(\text{Precision} + \text{Recall})}
+\]
+
+## 3. Summary
+
+- The model **rarely misses a Fraud** (88% recall) but **labels nearly everything as Fraud**, producing many false positives.  
+- You get **very low Fraud precision** (1%), which drives overall accuracy down to 13%.  
+- In fraud detection, such a model would catch most fraud but at the cost of investigating a huge number of legitimate applications.
