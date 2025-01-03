@@ -35,8 +35,12 @@ class DataIngestion:
         #read from different sources
         logging.info("Begin data ingestion method")
         try:
-            df = pd.read_csv('notebook\data\creditcard.csv')
+            df = pd.read_csv('notebook/data/fraud.csv')
             logging.info('Read csv file as dataframe')
+            
+            #drop intended_balcon_amount and prev_address_months_count
+
+            df.drop(['prev_address_months_count', 'intended_balcon_amount', 'device_fraud_count'], axis=1, inplace=True)
             
             #Create dir for data_path
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
@@ -63,7 +67,13 @@ if __name__=="__main__":
     
     data_transformation_obj = DataTransformation()
     
-    train_arr, test_arr,_ = data_transformation_obj.init_data_transformation(train_path, test_path)
+    X_Train, X_test, y_train, y_test,_ = data_transformation_obj.init_data_transformation(train_path, test_path)
+    
+    print(X_Train.shape)
+    print(X_test.shape)
+    print(y_train.shape)
+    print(y_test.shape)
+    #print(X_Train[:5,:])
     
     
     
