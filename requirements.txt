@@ -11,4 +11,6 @@ imbalanced-learn
 dask
 imblearn
 statsmodels
+lightgbm
+optuna
 #-e .
