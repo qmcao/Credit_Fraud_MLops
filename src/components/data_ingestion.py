@@ -10,8 +10,8 @@ from dataclasses import dataclass
 from src.components.data_transformation import DataTransformation
 from src.components.data_transformation import DataTransformationConfig
 
-# from src.components.model_trainer import ModelTrainerConfig
-# from src.components.model_trainer import ModelTrainer
+from src.components.model_trainer import ModelTrainerConfig
+from src.components.model_trainer import ModelTrainer
 
 RANDOM_STATE = 42
 @dataclass
@@ -67,12 +67,13 @@ if __name__=="__main__":
     
     data_transformation_obj = DataTransformation()
     
-    X_Train, X_test, y_train, y_test,_ = data_transformation_obj.init_data_transformation(train_path, test_path)
+    X_train, X_test, y_train, y_test,_ = data_transformation_obj.init_data_transformation(train_path, test_path)
+    model_trainer = ModelTrainer()
+    best_model_name, report = model_trainer.init_model_trainer(X_train, X_test, y_train, y_test)
     
-    print(X_Train.shape)
-    print(X_test.shape)
-    print(y_train.shape)
-    print(y_test.shape)
+    print(f"Best model: {best_model_name}")
+    print(report)    
+
     #print(X_Train[:5,:])
     
     
