@@ -11,6 +11,6 @@ imbalanced-learn
 dask
 imblearn
 statsmodels
-lightgbm
+lightgbm==3.32
 optuna
 #-e .
