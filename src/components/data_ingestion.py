@@ -20,6 +20,7 @@ class DataIngestionConfig:
     Object to store the path of data
     '''
     train_data_path: str=os.path.join('artifacts',"train.csv")
+    val_data_path: str=os.path.join('artifacts',"val.csv")
     test_data_path: str=os.path.join('artifacts',"test.csv")
     raw_data_path: str=os.path.join('artifacts',"data.csv")
 
@@ -47,14 +48,25 @@ class DataIngestion:
             
             df.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
             
+            # Define train, val, test index 
+            train_months = [1, 2, 3, 4, 5]
+            val_month = [6]
+            test_months = [7, 8]
+            
             logging.info("Init train test split")
-            train_set, test_set = train_test_split(df, test_size=0.2, random_state= RANDOM_STATE)
+            train_set = df[df["month"].isin(train_months)]
+            val_set = df[df['month'].isin(val_month)]
+            test_set = df[df['month'].isin(test_months)]
+            
+            #train_set, test_set = train_test_split(df, test_size=0.2, random_state= RANDOM_STATE)
             train_set.to_csv(self.ingestion_config.train_data_path, index= False, header=True)
+            val_set.to_csv(self.ingestion_config.val_data_path, index= False, header=True)
             test_set.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
             logging.info('Data ingestion is completed')
             
             return(
                 self.ingestion_config.train_data_path,
+                self.ingestion_config.val_data_path,
                 self.ingestion_config.test_data_path
             )
             
@@ -63,18 +75,13 @@ class DataIngestion:
 
 if __name__=="__main__":
     obj = DataIngestion()
-    train_path, test_path = obj.init_data_ingestion()
+    train_path, val_path, test_path = obj.init_data_ingestion()
     
     data_transformation_obj = DataTransformation()
     
-    X_train, X_test, y_train, y_test,_ = data_transformation_obj.init_data_transformation(train_path, test_path)
+    X_train, X_val, X_test, y_train, y_val, y_test,_ = data_transformation_obj.init_data_transformation(train_path, val_path, test_path)
     model_trainer = ModelTrainer()
-    best_model_name, report = model_trainer.init_model_trainer(X_train, X_test, y_train, y_test)
-    
-    print(f"Best model: {best_model_name}")
-    print(report)    
-
-    #print(X_Train[:5,:])
+    _,_ = model_trainer.init_model_trainer(X_train, X_val, X_test, y_train, y_val, y_test)
     
     
     

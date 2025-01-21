@@ -57,7 +57,6 @@ class DataTransformation:
                 ("imputer",SimpleImputer(strategy="most_frequent")),
                 ("one_hot_encoder",OneHotEncoder(sparse=False)),
                 ('cat_feature_select', SelectKBest(score_func=chi2, k=19)), # According to EDA
-                #("scaler",StandardScaler(with_mean=False))
                 ]
             )
             
@@ -96,15 +95,16 @@ class DataTransformation:
         except Exception as e:
             raise CustomeException(e,sys)
         
-    def init_data_transformation(self, train_path, test_path):
+    def init_data_transformation(self, train_path, val_path, test_path):
         '''
-        @return X_train_processed, X_test_processed, y_train, y_test and path to preprocessor.pkl file
+        @return X_train_processed, X_val_processed, X_test_processed, y_train, y_val, y_test and path to preprocessor.pkl file
         '''
         try:
             train_df = pd.read_csv(train_path)
+            val_df = pd.read_csv(val_path)
             test_df = pd.read_csv(test_path)
             
-            logging.info("Read train and test data completed")
+            logging.info("Read train, validation and test data completed")
             
             logging.info("Obtaining preprocessing object")
 
@@ -115,43 +115,20 @@ class DataTransformation:
             X_train = train_df.drop(columns=[target_column_name], axis=1)     
             y_train = train_df[target_column_name]
             
+            X_val = val_df.drop(columns=target_column_name, axis=1)
+            y_val = val_df[target_column_name]
+            
             X_test = test_df.drop(columns=[target_column_name], axis=1)
             y_test = test_df[target_column_name]
             
             logging.info(
-                "Applying preprocessing on training dataframe and testing dataframe"
+                "Applying preprocessing on training dataframe, validation dataframe and testing dataframe"
             )
             
-            X_train_preprocessed = preprocessor_obj.fit_transform(X_train, y_train)
-            X_test_preprocessed = preprocessor_obj.transform(X_test)     
+            X_train_processed = preprocessor_obj.fit_transform(X_train, y_train)
+            X_val_processed = preprocessor_obj.transform(X_val)
+            X_test_processed = preprocessor_obj.transform(X_test)     
            
-            
-            # numerical_features = ['income', 'name_email_similarity', 'current_address_months_count', 'customer_age', 'days_since_request'
-            #         , 'zip_count_4w', 'velocity_6h', 'velocity_24h', 'velocity_4w', 'bank_branch_count_8w', 
-            #         'date_of_birth_distinct_emails_4w', 'credit_risk_score', 'bank_months_count', 'proposed_credit_limit',  'session_length_in_minutes',
-            #         'device_distinct_emails_8w', 'month']
-            
-            # binary_features = [
-            #     'email_is_free',
-            #     'phone_home_valid',
-            #     'phone_mobile_valid',
-            #     'has_other_cards',
-            #     'foreign_request',
-            #     'keep_alive_session',
-            
-            # ]
-            # categorical_features = ['payment_type', 'employment_status', 'housing_status',
-            #              'source', 'device_os']
-
-            # # Retrieve feature names from preprocessor
-            # num_features = preprocessor_obj.named_transformers_['num_pipeline'].named_steps['num_feature_select'].get_feature_names_out(numerical_features)
-            # cat_features = preprocessor_obj.named_transformers_['cat_pipeline'].named_steps['cat_feature_select'].get_feature_names_out(categorical_features)
-            # bin_features = preprocessor_obj.named_transformers_['bin_pipeline'].named_steps['bin_feature_select'].get_feature_names_out(binary_features)
-            # # Combine all feature names
-            # all_features = np.concatenate([num_features, cat_features, bin_features])
-            
-            # X_train_preprocessed_df = pd.DataFrame(X_train_preprocessed, columns=all_features, index=X_train.index)
-            # X_test_preprocessed_df = pd.DataFrame(X_test_preprocessed, columns=all_features, index=X_test.index)
             logging.info("Preprocessing completed.")
             
             save_object(
@@ -163,9 +140,11 @@ class DataTransformation:
             logging.info(f"Saved preprocessing object.")
             
             return (
-                X_train_preprocessed,
-                X_test_preprocessed,
+                X_train_processed,
+                X_val_processed,
+                X_test_processed,
                 np.array(y_train),
+                np.array(y_val),
                 np.array(y_test),
                 self.data_transformation_config.preprocessor_obj_file_path,
             )
