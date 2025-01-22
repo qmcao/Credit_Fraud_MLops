@@ -22,13 +22,13 @@ To overcome these challenges, this project explores **decoupling techniques** as
 
 The primary objectives of this project are:
 
-### 1. Fraud Detection Model Development:
+#### 1. Fraud Detection Model Development:
 Utilize comprehensive Exploratory Data Analysis (EDA), data cleaning, feature engineering, and advanced machine learning techniques to develop a highly accurate model for identifying fraudulent credit card applications.
 
-### 2. Hyperparameter Optimization and Calibration:
+#### 2. Hyperparameter Optimization and Calibration:
 Employ advanced optimization techniques, such as **Optuna**, to identify optimal hyperparameters for the LightGBM classifier. Subsequently, apply **calibration** methods to align predicted probabilities with true outcome frequencies, ensuring reliable threshold-based decision-making.
 
-### 3. Machine Learning Pipeline Development
+#### 3. Machine Learning Pipeline Development
 Develop an **automated machine learning pipeline** comprising the following components:
 
 - **Data_ingestion.py**: Automates the ingestion of data from various sources, ensuring seamless data flow into the system.
@@ -37,10 +37,10 @@ Develop an **automated machine learning pipeline** comprising the following comp
 
 - **model_training.py**: Automates the model training process, incorporating steps for hyperparameter tuning, model calibration, and threshold determination, thereby ensuring consistency and efficiency in model updates.
 
-### 4. Decoupling: 
+#### 4. Decoupling: 
 Implement a **decoupling strategy**, as advocated by recent research [Luzio et al., 2024], to **separate** the evolving ML model from the **fixed business threshold**. Instead of continually re-tuning the threshold each time the model is retrained, this approach **calibrates** the model’s scores into reliable probabilities, ensuring that the **original cutoff** consistently meets target metrics (e.g., specific recall or FPR) over time. By keeping the threshold intact while updating only the underlying model, the system can accommodate new fraud patterns **without** frequent threshold adjustments or disruptions in established performance criteria.
 
-### 5. Performance Evaluation and Monitoring:
+#### 5. Performance Evaluation and Monitoring:
 Assess model performance using key metrics— **recall, and false positive rates**—on both validation and test datasets.
 
 Fureture goal: Implement monitoring tools to detect performance drift and trigger retraining processes when necessary.
