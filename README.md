@@ -44,7 +44,7 @@ Implement a **decoupling strategy**, as advocated by recent research [Luzio et a
 Assess model performance using key metrics— **recall, and false positive rates**—on both validation and test datasets.
 
 Fureture goal: Implement monitoring tools to detect performance drift and trigger retraining processes when necessary.
-
+![Project MLOps Diagram](project-mlops-diagram.svg)
 ## Project Structure
 ```text
 Credit_Fraud_endToEnd/
