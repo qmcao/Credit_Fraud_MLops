@@ -1,0 +1,16 @@
+pandas
+numpy
+seaborn
+matplotlib
+scikit-learn
+catboost
+xgboost
+dill
+flask
+imbalanced-learn
+dask
+imblearn
+statsmodels
+lightgbm
+optuna
+-e .
