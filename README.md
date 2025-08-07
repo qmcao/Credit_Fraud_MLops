@@ -139,8 +139,8 @@ The model is deployed as a Flask application on **AWS Elastic Beanstalk**. A **C
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
 ## License
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+
 
 ## Contact
-Minh Cao - [Your Email] - [Your LinkedIn Profile]
+Minh Cao - [qmcao@uci.edu] - [[Your LinkedIn Profile](https://www.linkedin.com/in/minhcao-uci/)]
 
