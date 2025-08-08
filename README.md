@@ -1,9 +1,9 @@
 # Credit Card Fraud Detection with MLOps
 
-![CI/CD](https://img.shields.io/badge/CI%2FCd-AWS%20CodePipeline-blue)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue)
 ![Language](https://img.shields.io/badge/Language-Python-blue)
 ![Framework](https://img.shields.io/badge/Framework-Flask-green)
-![deployment](https://img.shields.io/badge/Deployment-AWS%20Elastic%20Beanstalk-orange)
+![Deployment](https://img.shields.io/badge/Deployment-AWS%20EC2%20(Self--Hosted)-orange)
 
 This project implements an end-to-end MLOps pipeline for detecting fraudulent credit card applications. It leverages advanced machine learning techniques, automated pipelines, and a decoupled architecture to build a robust and maintainable fraud detection system.
 
@@ -45,7 +45,7 @@ The pipeline consists of the following key stages:
 2.  **Data Transformation**: A preprocessing pipeline handles missing values, scales numerical features, encodes categorical variables, and performs feature selection. The `preprocessor` object is saved for consistent application during training and prediction.
 3.  **Model Training**: The LightGBM model is trained with optimized hyperparameters. The model's output is calibrated to produce reliable probabilities.
 4.  **Model Decoupling**: A fixed business threshold is determined based on the desired False Positive Rate (FPR). This decouples the model from the business logic, allowing the model to be updated without changing the threshold.
-5.  **Deployment**: The trained model and preprocessing pipeline are deployed as a Flask API on AWS Elastic Beanstalk, with a CI/CD pipeline set up using AWS CodePipeline for automated deployments.
+5.  **Deployment**: The trained model and preprocessing pipeline are containerized using Docker and deployed via a CI/CD pipeline for automated deployments.
 
 ## Project Structure
 ```
@@ -128,7 +128,25 @@ This approach ensures that the business decision boundary remains stable even wh
 
 ## Deployment
 
-The model is deployed as a Flask application on **AWS Elastic Beanstalk**. A **CI/CD pipeline** using **AWS CodePipeline** is configured to automatically build, test, and deploy new versions of the application whenever changes are pushed to the GitHub repository.
+The model is deployed as a Docker container managed by a **GitHub Actions CI/CD pipeline**. The pipeline automates the building, testing, and deployment of the application onto a self-hosted runner (e.g., an AWS EC2 instance).
+
+The workflow is defined in `.github/workflows/main.yml` and consists of three main jobs:
+
+1.  **Continuous Integration (`integration`)**:
+    *   Triggered on every push to the `main` branch.
+    *   Performs initial checks like linting and running unit tests to ensure code quality.
+
+2.  **Continuous Delivery (`build-and-push-ecr-image`)**:
+    *   After successful integration, this job builds a Docker image of the application.
+    *   It then tags the image and pushes it to a private **Amazon Elastic Container Registry (ECR)** repository.
+
+3.  **Continuous Deployment (`Continuous-Deployment`)**:
+    *   This job runs on a **self-hosted runner** (e.g., an AWS EC2 instance).
+    *   It pulls the latest Docker image from ECR.
+    *   It stops and removes any old running versions of the application container.
+    *   Finally, it runs the new Docker container, exposing the Flask application on port 8080 to serve prediction requests.
+
+This setup ensures that any changes merged into the main branch are automatically tested, packaged, and deployed, providing a true end-to-end automated workflow.
 
 ## Future Work
 - Implement a monitoring system to detect model drift and trigger retraining.
