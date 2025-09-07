@@ -160,5 +160,5 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 
 
 ## Contact
-Minh Cao - [qmcao@uci.edu] - [[Your LinkedIn Profile](https://www.linkedin.com/in/minhcao-uci/)]
+Minh Cao - [qmcao@uci.edu] - [[LinkedIn](https://www.linkedin.com/in/minhcao-uci/)]
 
