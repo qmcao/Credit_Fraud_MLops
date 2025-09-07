@@ -1,11 +1,12 @@
 # Credit Card Fraud Detection with MLOps
 
-![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue)
-![Language](https://img.shields.io/badge/Language-Python-blue)
-![Framework](https://img.shields.io/badge/Framework-Flask-green)
-![Deployment](https://img.shields.io/badge/Deployment-AWS%20EC2%20(Self--Hosted)-orange)
+![Language](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)
+![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white)
+![Scikit-learn](https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![Containerization](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
+![Deployment](https://img.shields.io/badge/Amazon_Web_Services-FF9900?style=for-the-badge&logo=amazonwebservices&logoColor=white)
+![CI/CD](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 
-This project implements an end-to-end MLOps pipeline for detecting fraudulent credit card applications. It leverages advanced machine learning techniques, automated pipelines, and a decoupled architecture to build a robust and maintainable fraud detection system.
 
 ## Table of Contents
 1. [Project Overview](#project-overview)
@@ -26,13 +27,12 @@ This project implements an end-to-end MLOps pipeline for detecting fraudulent cr
 
 ## Project Overview
 
-Credit card fraud is a significant threat in the financial industry. Traditional fraud detection models often struggle to keep up with evolving fraud patterns and require frequent, time-consuming threshold adjustments. This project addresses these challenges by implementing a decoupled architecture, as proposed by Luzio et al. (2024). By calibrating model outputs and using a fixed business threshold, the system can adapt to new data while maintaining consistent decision criteria.
+Credit fraud is a major challenge in the financial industry, where traditional rule-based systems demand constant manual updates and often struggle to keep pace with evolving fraud patterns. This project demonstrates an end-to-end machine learning workflow for fraud detection, including data ingestion, feature engineering, model training, and deployment as a cloud-based web service. The objective is to automate the fraud detection process, reducing manual intervention while improving adaptability. This work was inspired by my internship experience on a credit fraud team, where I explored more efficient and scalable approaches to combating fraud.
 
-The primary objectives of this project are:
-- **Develop a highly accurate fraud detection model** using LightGBM with hyperparameter tuning (Optuna) and calibration.
-- **Build an automated MLOps pipeline** for data ingestion, transformation, and model training.
-- **Implement a decoupling strategy** to separate the ML model from the business threshold, ensuring stability and reducing maintenance overhead.
-- **Deploy the model as a web service** with a CI/CD pipeline for continuous delivery.
+The primary goals of this project are:
+- **Develop a robust fraud detection model** by benchmarking multiple machine learning algorithms and applying hyperparameter tuning to maximize performance.
+- **Implement an automated MLOps pipeline** that handles data ingestion, preprocessing, feature engineering, and model training with minimal manual intervention.
+- **Deploy the trained model as a cloud-based** web service using containerization and a CI/CD pipeline to enable seamless integration and continuous delivery.
 
 ## MLOps Pipeline
 
