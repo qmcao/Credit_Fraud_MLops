@@ -303,3 +303,25 @@ Bootstrapping is a fundamental technique employed in our experiment for several 
 ## **Conclusion**
 
 By integrating bootstrapping into our training protocol, we ensure that our fraud detection models are **robust**, **reliable**, and **consistent**. This approach not only aligns with the methodologies proposed in [Jesus et al., 2022](#) but also reinforces our commitment to maintaining high-performance standards in dynamic, real-world scenarios.
+
+
+project/
+├─ src/
+│  ├─ data_extraction.py
+│  ├─ data_validation.py
+│  ├─ prep.py
+│  ├─ train.py
+│  ├─ evaluate.py
+│  └─ validate_model.py
+├─ pipelines/
+│  └─ train_pipeline.py        # orchestrates the steps above
+├─ serving/
+│  ├─ app.py                   # FastAPI + load_model_from_registry()
+│  └─ Dockerfile
+├─ configs/
+│  ├─ dev.yaml
+│  ├─ staging.yaml
+│  └─ prod.yaml
+└─ deploy/
+   ├─ airflow_dag.py / prefect_flow.py (if used)
+   └─ ci_cd.yaml (promote model → redeploy service)
