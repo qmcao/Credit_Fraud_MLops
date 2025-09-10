@@ -17,18 +17,8 @@ import os
 
 from src.utils import save_object
 
-@dataclass
-class DataTransformationConfig:
-    '''
-    Object storing the preprocessor.pkl file path
-    '''
-    preprocessor_obj_file_path= os.path.join('artifacts', 'preprocessor.pkl')
 
 class DataTransformation:
-    def __init__(self):
-        self.data_transformation_config = DataTransformationConfig()
-    
-    
     def drop_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> pd.DataFrame:
         """
         Identifies columns in a dataframe with more than 70% missing values.

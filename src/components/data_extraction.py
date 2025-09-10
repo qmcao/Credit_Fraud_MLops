@@ -7,9 +7,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
-from src.components.data_preperation import DataTransformation
-from src.components.data_preperation import DataTransformationConfig
-
+from src.components.data_transformation import DataTransformation
 from src.components.train import ModelTrainerConfig
 from src.components.train import ModelTrainer
 
