@@ -1,25 +1,14 @@
-# Feature engineer, data cleaning
-
-import sys
-from dataclasses import dataclass
-
 import numpy as np 
 import pandas as pd
-from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer 
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler, OneHotEncoder, StandardScaler
-from sklearn.feature_selection import SelectKBest, f_classif, chi2
 
-from src.exception import CustomeException
 from src.logger import logging
-import os
-
-from src.utils import save_object
 
 
 class DataTransformation:
-    def drop_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> pd.DataFrame:
+    def drop_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Identifies columns in a dataframe with more than 70% missing values.
 
@@ -43,7 +32,7 @@ class DataTransformation:
         return new_train_data, new_test_data
 
     def impute_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame, feature_list: list[str], 
-                    imputer:SimpleImputer, strat:str ) ->pd.DataFrame:
+                    imputer:SimpleImputer, strat:str ) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         This function handle impute logic
         """
@@ -68,7 +57,8 @@ class DataTransformation:
         
         return train_data_imputed, test_data_imputed
         
-    def encode_cat_cols(self, train_data: pd.DataFrame, test_data: pd.DataFrame, feature_list: list[str]):
+    def encode_cat_cols(self, train_data: pd.DataFrame, test_data: pd.DataFrame,
+                        feature_list: list[str])-> tuple[pd.DataFrame, pd.DataFrame]: 
         '''
         This function encode categorical variables using OneHotEncoder(sparse = False)
         '''
@@ -93,7 +83,8 @@ class DataTransformation:
         return train_data_encoded, test_data_encoded
     
     
-    def scale_num_cols(self, train_data: pd.DataFrame, test_data: pd.DataFrame, feature_list: list[str]):
+    def scale_num_cols(self, train_data: pd.DataFrame, test_data: pd.DataFrame,
+                       feature_list: list[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
         '''
         This function scale the numerical variables using Robust Scaler due to large number of outliers
         '''
@@ -118,7 +109,7 @@ class DataTransformation:
         return train_data_scaled, test_data_scaled
         
     
-    def clean_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> pd.DataFrame:
+    def clean_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Clean train and test datasets by:
         
