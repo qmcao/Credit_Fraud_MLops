@@ -78,6 +78,56 @@ class DataTransformation:
         
         return train_data_imputed, test_data_imputed
         
+    def encode_cat_cols(self, train_data: pd.DataFrame, test_data: pd.DataFrame, feature_list: list[str]):
+        '''
+        This function encode categorical variables using OneHotEncoder(sparse = False)
+        '''
+        # Init encoder object and fit on training set
+        train = train_data[feature_list]
+        test = test_data[feature_list]
+        encoder = OneHotEncoder(sparse_output=False)
+        encoder.fit(train_data[feature_list])
+        
+        # Transform on both training and test data
+        train_data_encoded = pd.DataFrame(
+            encoder.transform(train),
+            columns= encoder.get_feature_names_out(feature_list),
+            index= train.index
+        )
+        test_data_encoded = pd.DataFrame(
+            encoder.transform(test),
+            columns= encoder.get_feature_names_out(feature_list),
+            index = test.index
+        )
+        
+        return train_data_encoded, test_data_encoded
+    
+    
+    def scale_num_cols(self, train_data: pd.DataFrame, test_data: pd.DataFrame, feature_list: list[str]):
+        '''
+        This function scale the numerical variables using Robust Scaler due to large number of outliers
+        '''
+        # Init scaler object and fit on training set
+        scaler = RobustScaler()
+        train = train_data[feature_list]
+        test = test_data[feature_list]
+        scaler.fit(train)
+        
+        # Transform on both training and test data
+        train_data_scaled = pd.DataFrame(
+            scaler.transform(train),
+            columns= feature_list,
+            index= train.index
+        )
+        test_data_scaled = pd.DataFrame(
+            scaler.transform(test),
+            columns= feature_list,
+            index = test.index
+        )
+        
+        return train_data_scaled, test_data_scaled
+        
+    
     def clean_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> pd.DataFrame:
         """
         Clean train and test datasets by:
@@ -85,11 +135,12 @@ class DataTransformation:
         1. Dropping columns with >70% missing values.
         2. Imputing remaining missing values 
             (median for numeric, most_frequent for categorical).
-        3. (Future) Apply feature transformations.
+        3. One hot encode categorical variable
+        4. Scale numerical variable
 
         Returns cleaned train and test DataFrames.
         """
-        # Prepare what to impute and impute strategy
+        # Prepare what to impute
         numerical_features = ['income', 'name_email_similarity', 'current_address_months_count', 'customer_age', 'days_since_request'
         , 'zip_count_4w', 'velocity_6h', 'velocity_24h', 'velocity_4w', 'bank_branch_count_8w', 
         'date_of_birth_distinct_emails_4w', 'credit_risk_score', 'bank_months_count', 'proposed_credit_limit',  'session_length_in_minutes',
@@ -102,145 +153,32 @@ class DataTransformation:
                                     'has_other_cards',
                                     'foreign_request',
                                     'keep_alive_session']
-        
+        #Init impute strat
         Imputer = SimpleImputer()
         numeric_strat = "median" # Highly skewed data
         cat_strat = "most_frequent"
         
-        
-        # Start cleaning process : Dropping bad columns -> Impute -> Transform
+
+        # Start cleaning process : Dropping bad columns -> Impute -> Transform (Encode + Scale)
+        # Drop bad columns
         train, test = self.drop_data(train_data, test_data)     
-        imputed_train_numeric, imputed_test_numeric = self.impute_data(train, test,
-                                                                 numerical_features, Imputer, numeric_strat)
-        imputed_train_cat, imputed_test_cat = self.impute_data(train, test,
-                                                                 cat_features, Imputer, cat_strat)
         
-        # Concat cleaned numerical and categorical data together to return
-        cleaned_train = pd.concat([imputed_train_numeric, imputed_train_cat], axis=1)
-        cleaned_test = pd.concat([imputed_test_numeric, imputed_test_cat], axis=1)
+        # Impute missing columns
+        imputed_train_numeric, imputed_test_numeric = self.impute_data(train, test, numerical_features, Imputer, numeric_strat)
+        imputed_train_cat, imputed_test_cat = self.impute_data(train, test, cat_features, Imputer, cat_strat)
+        
+        # Concat cleaned numerical and categorical data to apply transformation
+        imputed_train = pd.concat([imputed_train_numeric, imputed_train_cat], axis=1)
+        imputed_test = pd.concat([imputed_test_numeric, imputed_test_cat], axis=1)
+        
+        # Encoded categorical columns
+        encoded_train_cat, encoded_test_cat = self.encode_cat_cols(imputed_train, imputed_test,cat_features)
+        scaled_train_num, scaled_test_num = self.scale_num_cols(imputed_train, imputed_test,numerical_features)
+        
+        # Concat cleaned numerical and categorical data to return 
+        cleaned_train = pd.concat([encoded_train_cat, scaled_train_num], axis=1)
+        cleaned_test = pd.concat([encoded_test_cat, scaled_test_num], axis=1) 
         
         return cleaned_train, cleaned_test
     
-    def get_data_transformer_object(self, train: pd.DataFrame, test: pd.DataFrame):
-        '''
-        This function is used for creating data transformation object (e.g preprocessor)
-        '''
-        try:
-            #Numerical pipeline for data transformation
-            numerical_features = ['income', 'name_email_similarity', 'current_address_months_count', 'customer_age', 'days_since_request'
-                    , 'zip_count_4w', 'velocity_6h', 'velocity_24h', 'velocity_4w', 'bank_branch_count_8w', 
-                    'date_of_birth_distinct_emails_4w', 'credit_risk_score', 'bank_months_count', 'proposed_credit_limit',  'session_length_in_minutes',
-                    'device_distinct_emails_8w', 'month']
-            
-            num_pipeline = Pipeline(
-                steps=[
-                    # Add to the pipeline if need to handle missing value
-                    ("imputer", SimpleImputer(strategy="median")),
-                    ("robust scaler", RobustScaler()),
-                    ('num_feature_select', SelectKBest(score_func=f_classif, k=16)) # According to EDA
-                ]
-            )
-            
-            #Categorical pipeline for data transformation
-            categorical_features = ['payment_type', 'employment_status', 'housing_status',
-                         'source', 'device_os']
-            
-            cat_pipeline=Pipeline(
-                steps=[
-                ("imputer",SimpleImputer(strategy="most_frequent")),
-                ("one_hot_encoder",OneHotEncoder(sparse=False)),
-                ('cat_feature_select', SelectKBest(score_func=chi2, k=19)), # According to EDA
-                ]
-            )
-            
-            # --- Binary Pipeline ------
-            # -----------------------------------------------
-            # Usually, keep binary features as 0/1 with minimal or no transformation.
-            # - Optional imputation if these fields have missing values
-            # - Typically no scaling or OHE needed
-            binary_features = [
-                'email_is_free',
-                'phone_home_valid',
-                'phone_mobile_valid',
-                'has_other_cards',
-                'foreign_request',
-                'keep_alive_session',
-            ]
-
-            binary_pipeline = Pipeline([
-                ('bin_imputer', SimpleImputer(strategy='most_frequent')),
-            ])
-            
-            logging.info(f"Numerical columns: {numerical_features}")
-            logging.info(f"Categorical columns: {categorical_features}")
-            logging.info(f"Binary columns: {binary_features}")
-            
-            preprocessor= ColumnTransformer([
-                ("num_pipeline", num_pipeline, numerical_features),
-                ("cat_pipeline",cat_pipeline, categorical_features),
-                ("bin_pipeline", binary_pipeline, binary_features)
-            ])
-            
-            logging.info("Preprocessor object created successfully.")
-
-            return preprocessor
-            
-        except Exception as e:
-            raise CustomeException(e,sys)
-        
-    def init_data_transformation(self, train_path, val_path, test_path):
-        '''
-        @return X_train_processed, X_val_processed, X_test_processed, y_train, y_val, y_test and path to preprocessor.pkl file
-        '''
-        try:
-            train_df = pd.read_csv(train_path)
-            val_df = pd.read_csv(val_path)
-            test_df = pd.read_csv(test_path)
-            
-            logging.info("Read train, validation and test data completed")
-            
-            logging.info("Obtaining preprocessing object")
-
-            preprocessor_obj = self.get_data_transformer_object()
-            
-            target_column_name= "fraud_bool"
-            
-            X_train = train_df.drop(columns=[target_column_name], axis=1)     
-            y_train = train_df[target_column_name]
-            
-            X_val = val_df.drop(columns=target_column_name, axis=1)
-            y_val = val_df[target_column_name]
-            
-            X_test = test_df.drop(columns=[target_column_name], axis=1)
-            y_test = test_df[target_column_name]
-            
-            logging.info(
-                "Applying preprocessing on training dataframe, validation dataframe and testing dataframe"
-            )
-            
-            X_train_processed = preprocessor_obj.fit_transform(X_train, y_train)
-            X_val_processed = preprocessor_obj.transform(X_val)
-            X_test_processed = preprocessor_obj.transform(X_test)     
-           
-            logging.info("Preprocessing completed.")
-            
-            save_object(
-
-                file_path=self.data_transformation_config.preprocessor_obj_file_path,
-                obj=preprocessor_obj
-
-            )
-            logging.info(f"Saved preprocessing object.")
-            
-            return (
-                X_train_processed,
-                X_val_processed,
-                X_test_processed,
-                np.array(y_train),
-                np.array(y_val),
-                np.array(y_test),
-                self.data_transformation_config.preprocessor_obj_file_path,
-            )
-            
-        except Exception as e:
-            raise CustomeException(e, sys)
+    
