@@ -42,6 +42,9 @@ class DataTransformationConfig:
     onehot_handle_unknown: str = "ignore"   # important for inference robustness
     onehot_sparse_output: bool = False
     scaler: RobustScaler = RobustScaler() 
+    
+    # response column
+    response_column: str = "fraud_bool"
        
 
 class DataTransformation:
@@ -52,6 +55,14 @@ class DataTransformation:
         self.transformation_config = DataTransformationConfig()
         
     # --- step ---
+    def get_response_column(self, train_data: pd.DataFrame, test_data: pd.DataFrame):
+        """
+        Return the response variable with its original index
+        """
+        res_col = self.transformation_config.response_column
+        
+        return train_data[res_col], test_data[res_col]
+        
         
     def drop_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -163,6 +174,8 @@ class DataTransformation:
 
         Returns cleaned train and test DataFrames.
         """
+        # Get y_train, y_test
+        y_train, y_test = self.get_response_column(train_data, test_data)
         
         # Start cleaning process : Dropping bad columns -> Impute -> Transform (Encode + Scale)
         # Drop bad columns
@@ -179,8 +192,8 @@ class DataTransformation:
         scaled_train_num, scaled_test_num = self.scale_num_cols(train_num, test_num, self.transformation_config.numerical_features)
         
         # Concat cleaned numerical and categorical data to return 
-        cleaned_train = pd.concat([encoded_train_cat, scaled_train_num], axis=1)
-        cleaned_test = pd.concat([encoded_test_cat, scaled_test_num], axis=1) 
+        cleaned_train = pd.concat([encoded_train_cat, scaled_train_num, y_train], axis=1)
+        cleaned_test = pd.concat([encoded_test_cat, scaled_test_num, y_test], axis=1) 
         
         return cleaned_train, cleaned_test
     
