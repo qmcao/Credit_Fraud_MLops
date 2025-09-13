@@ -8,8 +8,7 @@ from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
 from src.components.data_transformation import DataTransformation
-from src.components.train import ModelTrainerConfig
-from src.components.train import ModelTrainer
+from src.components.model_training import ModelTrainer
 
 RANDOM_STATE = 42
 @dataclass
@@ -50,17 +49,6 @@ class DataIngestion:
         return(
             self.ingestion_config.train_data_path,
             self.ingestion_config.test_data_path)
-            
-
-if __name__=="__main__":
-    obj = DataIngestion()
-    train_path, val_path, test_path = obj.init_data_ingestion()
-    
-    # data_transformation_obj = DataTransformation()
-    
-    # X_train, X_val, X_test, y_train, y_val, y_test,_ = data_transformation_obj.init_data_transformation(train_path, val_path, test_path)
-    # model_trainer = ModelTrainer()
-    # _,_ = model_trainer.init_model_trainer(X_train, X_val, X_test, y_train, y_val, y_test)
     
     
     
