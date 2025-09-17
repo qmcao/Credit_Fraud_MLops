@@ -11,13 +11,20 @@ class PredictionPipeline:
     
     def predict(self,features):
         try:
-            model_path=os.path.join("artifacts","model.pkl")
-            preprocessor_path=os.path.join('artifacts','preprocessor.pkl')
-            print("Before Loading")
+            # Load object from artifacts folder
+            model_path=os.path.join("artifacts","models", "model.pkl")
             model=load_object(file_path=model_path)
+            preprocessor_path = os.path.join("artifacts","processed", "preprocessor.pkl")
             preprocessor=load_object(file_path=preprocessor_path)
-            print("After Loading")
+            
+            
+            train_data = pd.read_csv('artifacts/raw/train.csv')
+            train = train_data.drop(columns=['fraud_bool'], axis=1)
+
+            preprocessor.fit(train)
             data_scaled=preprocessor.transform(features)
+            
+            # Predict
             preds=model.predict(data_scaled)
             return preds
         

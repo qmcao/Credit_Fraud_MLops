@@ -6,6 +6,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler, OneHotEncoder, StandardScaler
 from src.utils.logger import logging
 import os
+import joblib
+
+
+# Use to produce preprocessor obj
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 class DataTransformation:
     def __init__(self):
@@ -181,6 +187,9 @@ class DataTransformation:
                 transformed_test_out_path)
 
     
+    
+    
+    
     # -- helper --
     def load_config(self):
         with open('conf/features.yml', 'r') as config_file:
@@ -193,3 +202,42 @@ class DataTransformation:
         """
         res_col = self.res_col
         return train_data[res_col], test_data[res_col]
+    
+    
+    def build_preprocessor(self):
+        """
+        Build a scikit-learn preprocessor (ColumnTransformer) based on the config.
+        This preprocessor can be used in a model pipeline.
+        """
+        # ---- numerical pipeline ----
+        num_pipeline = Pipeline(steps=[
+            ("imputer", SimpleImputer(strategy=self.num_impute_strat)),
+            ("scaler", RobustScaler() if self.scaling_strat == "robust-scaler" else StandardScaler())
+        ])
+
+        # ---- categorical pipeline ----
+        cat_pipeline = Pipeline(steps=[
+            ("imputer", SimpleImputer(strategy=self.cat_impute_strat)),
+            ("encoder", OneHotEncoder(
+                handle_unknown=self.encode_unknown,
+                sparse_output=self.encode_sparse
+            ))
+        ])
+
+        # ---- combine ----
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ("num", num_pipeline, self.num_features),
+                ("cat", cat_pipeline, self.cat_features)
+            ]
+        )
+        return preprocessor    
+    
+    def save_preprocessor(self, preprocessor, filename="preprocessor.pkl"):
+        """
+        Save the preprocessor object into the artifacts folder.
+        """
+        os.makedirs(self.out_path, exist_ok=True)
+        preprocessor_path = os.path.join(self.out_path, filename)
+        joblib.dump(preprocessor, preprocessor_path)
+        return preprocessor_path
