@@ -1,4 +1,5 @@
 import os
+import json
 import sys
 from dataclasses import dataclass, field
 import logging
@@ -33,7 +34,7 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import make_scorer, recall_score, classification_report, precision_score, confusion_matrix, get_scorer
 from sklearn.metrics import accuracy_score, roc_auc_score
 
-from src.utils.utils import save_object
+from src.utils.utils import save_object, save_json
 
 from imblearn.over_sampling import SMOTE
 
@@ -51,8 +52,9 @@ class ModelTrainer:
         self.random_state = self.config['global']['random_state']
         self.n_splits = self.config['global']['n_splits']
         
-        # self.model_name = self.config['model']['name']
-    
+        # output path
+        self.model_out_path = self.config['output']['model']
+        self.metrics_out_path = self.config['output']['metrics']
     
     # --steps--: 
     # Split X/y -> model selection via CV (train_data only) -> hyper param tuning 
@@ -60,14 +62,18 @@ class ModelTrainer:
     
     def split_feature_target(self, train_data: pd.DataFrame, test_data: pd.DataFrame):
         '''
-        This function split train_data, test_data into: X_train, X_test, y_train, y_test
+        This function split train_data, test_data into: X_train, X_test, y_train, y_test as numpy array
         '''
         X_train = train_data.drop(['fraud_bool'], axis=1)
         y_train = train_data['fraud_bool']
         X_test = test_data.drop(['fraud_bool'], axis=1)
         y_test = test_data['fraud_bool']
         
-        return X_train, X_test, y_train, y_test
+        return (np.array(X_train), 
+                np.array(X_test), 
+                np.array(y_train), 
+                np.array(y_test))
+        
     
     
     def apply_smote(self, X_train: np.ndarray, y_train: np.ndarray):
@@ -152,7 +158,7 @@ class ModelTrainer:
         """
         Evaluate model with best hyper params set on test set.
         """
-        scores = {}
+        scores = defaultdict(list) # automatically creates missing keys with a default empty list.
         
         # Predict on X_test and validate with y_test
         y_pred_prob, y_pred = self.get_scores_and_preds(model, X_test)
@@ -165,35 +171,83 @@ class ModelTrainer:
             
         return scores
     
-    # def train_pipeline(self):
-    #     '''
-    #     This function orchastrate all the steps in the model_trainer process
+    def main(self, train_path, test_path):
+        '''
+        This function orchastrate all the steps in the model_trainer process
         
-    #     This function return best model, its test_score and save the best_model with its metric in the artifacts file
-    #     '''
+        This function return best model base on primary metric, 
+        its test_score and save the best_model with its metric in the artifacts file
+        '''
         
-    #     for i, model in enumerate(self.models):
-    #         param_grid = self.params[i]
+        # read train, test data from artifacts folder and prep training and testing data
+        train = pd.read_csv(train_path)
+        test = pd.read_csv(test_path)
+        X_train, X_test, y_train, y_test = self.split_feature_target(train, test)
+        
+        res = []
+        
+        for i, model_name in enumerate(self.models):
+            model_metrics = {}
+            param_grid = self.params[i]
             
-    #         #
+            model, best_params, best_cv_scores, results = self.train_model(X_train, y_train, model_name,
+                                                                           param_grid)
+            model_test_score = self.evaluate(model, X_test, y_test)
             
+            # Save metrics of current model
+            model_metrics['model'] = model
+            model_metrics['model_name'] = model_name
+            model_metrics['best_params'] = best_params
+            model_metrics['test_score'] = model_test_score
+            
+            # push the current model metrics to results
+            res.append(model_metrics)
         
+        # Get best model results
+        best_model_index = self.best_test_score_model(res)
+        best_model_metric = res[best_model_index]
+        
+        # Save model and metrics into artifacts folder
+        model_fp = os.path.join(self.model_out_path, 'model.pkl')
+        metrics_fp = os.path.join(self.metrics_out_path, 'metrics.json')
+        save_object(model_fp, best_model_metric['model'])  
+        save_json(metrics_fp, best_model_metric['test_score'])
+        
+        return (model_fp, metrics_fp)
         
     
     
     # -- HELPER -- 
+    
+    def best_test_score_model(self, results):
+        """
+        Return index of the model with the best test score
+        """
+        best_test_score = None
+        best_index = None
+        
+        for i in range(len(results)):
+            model_metrics_test_score = results[i]['test_score']
+            
+            if best_test_score == None or model_metrics_test_score[self.primary_metric] < best_test_score:
+                best_test_score = model_metrics_test_score[self.primary_metric]
+                best_index = i
+        return best_index
+        
+    
+    
     def load_config(self):
-        with open('config.yml', 'r') as config_file:
+        with open('conf/config.yml', 'r') as config_file:
             return yaml.safe_load(config_file)
         
     def init_model(self, model_name:str, params: dict):
          
         if model_name == "logistic_regression":
-            base = LogisticRegression(verbose=1, n_jobs=-1, random_state=self.random_state)
+            base = LogisticRegression(verbose=0, n_jobs=-1, random_state=self.random_state)
             base.set_params(**params)
             return base
         elif model_name == "random_forest":
-            from sklearn.ensemble import RandomForestClassifier
+            
             base = RandomForestClassifier(random_state=self.random_state)
             base.set_params(**params)
             return base

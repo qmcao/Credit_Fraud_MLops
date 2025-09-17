@@ -7,46 +7,6 @@ from sklearn.preprocessing import RobustScaler, OneHotEncoder, StandardScaler
 from src.utils.logger import logging
 import os
 
-
-# @dataclass
-# class DataTransformationConfig:
-#     # Missing threshold and features
-#     drop_missing_threshold: float = 0.70
-#     negative_to_nan_cols: list[str] = field(default_factory=lambda:[
-#         "prev_address_months_count", "current_address_months_count",
-#         "intended_balcon_amount", "bank_months_count",
-#         "session_length_in_minutes", "device_distinct_emails_8w",
-#     ])
-    
-#     # Feature groups
-#     numerical_features: list[str] = field(default_factory=lambda:[
-#         "income", "name_email_similarity", "current_address_months_count",
-#         "customer_age", "days_since_request", "zip_count_4w", "velocity_6h",
-#         "velocity_24h", "velocity_4w", "bank_branch_count_8w",
-#         "date_of_birth_distinct_emails_4w", "credit_risk_score",
-#         "bank_months_count", "proposed_credit_limit",
-#         "session_length_in_minutes", "device_distinct_emails_8w", "month",
-#     ])
-#     categorical_features: list[str] = field(default_factory=lambda: [
-#         "payment_type", "employment_status", "housing_status", "source",
-#         "device_os", "email_is_free", "phone_home_valid",
-#         "phone_mobile_valid", "has_other_cards", "foreign_request",
-#         "keep_alive_session",
-#     ])
-    
-#      # Impute strategies
-#     numeric_impute_strategy: str = "median"
-#     categorical_impute_strategy: str = "most_frequent"
-    
-#     # Enc/Scale params
-#     onehot_handle_unknown: str = "ignore"   # important for inference robustness
-#     onehot_sparse_output: bool = False
-#     scaler: RobustScaler = RobustScaler() 
-    
-#     # response column
-#     response_column: str = "fraud_bool"
-       
-
 class DataTransformation:
     def __init__(self):
         '''

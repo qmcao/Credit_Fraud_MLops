@@ -57,6 +57,7 @@ class DataIngestion:
         
         
         # Save the dataframes as CSV files
+        os.makedirs(self.out_path, exist_ok=True)
         train_out_path = os.path.join(self.out_path, 'train.csv')
         test_out_path = os.path.join(self.out_path, 'test.csv')
         train_set.to_csv(train_out_path, index=False, header=True)
