@@ -1,7 +1,7 @@
 import sys
 import pandas as pd
-from src.exception import CustomeException
-from src.utils import load_object
+from src.utils.exception import CustomeException
+from src.utils.utils import load_object
 import os
 import random
 

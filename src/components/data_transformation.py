@@ -4,7 +4,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler, OneHotEncoder, StandardScaler
 from dataclasses import dataclass, field
-from src.logger import logging
+from src.utils.logger import logging
 
 
 

@@ -1,0 +1,22 @@
+# data source, sample size, paths
+global:
+  random_state: 42
+  
+
+source:
+  path: "s3://ml-feature-store-029552764749/credit_fraud/data/fraud_1.csv"
+
+split:
+  column: "month"
+  train_values: [1,2,3,4,5,6]
+  test_values: [7,8]
+
+sampling:
+  enabled: True 
+  type: 'fraction'
+  value: 0.1
+
+output:
+  root: 'artifacts/raw'
+  format: 'csv'
+  overwrite: false        # keep previous runs by default

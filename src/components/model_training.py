@@ -21,7 +21,7 @@ from sklearn.linear_model import LogisticRegression
 
 from xgboost import XGBClassifier
 import lightgbm as lgb
-from src.exception import CustomeException
+from src.utils.exception import CustomeException
 
 #under sampling
 
@@ -33,7 +33,7 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import make_scorer, recall_score, classification_report, precision_score, confusion_matrix, get_scorer
 from sklearn.metrics import accuracy_score, roc_auc_score
 
-from src.utils import save_object, tpr_at_fixed_fpr, eval_models, find_best_param, find_best_threshold_for_max_recall_at_fpr
+from src.utils.utils import save_object
 
 from imblearn.over_sampling import SMOTE
 
@@ -62,7 +62,6 @@ class ModelTrainer:
         '''
         This function split train_data, test_data into: X_train, X_test, y_train, y_test
         '''
-
         X_train = train_data.drop(['fraud_bool'], axis=1)
         y_train = train_data['fraud_bool']
         X_test = test_data.drop(['fraud_bool'], axis=1)
@@ -75,10 +74,8 @@ class ModelTrainer:
         """
         This function apply SMOTE technique to address imbalance problem in response class
         """
-        
-        #Init smote obj
+        #Init smote obj 
         smote = SMOTE()
-
         X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
         
         return X_train_smote, y_train_smote 
@@ -151,6 +148,37 @@ class ModelTrainer:
         
         return model, best_params, best_cv_scores, results
     
+    def evaluate(self, model, X_test: np.ndarray, y_test: np.ndarray):
+        """
+        Evaluate model with best hyper params set on test set.
+        """
+        scores = {}
+        
+        # Predict on X_test and validate with y_test
+        y_pred_prob, y_pred = self.get_scores_and_preds(model, X_test)
+        if "accuracy" in self.metrics:
+            scores["accuracy"].append(accuracy_score(y_test, y_pred))
+        if "recall" in self.metrics:
+            scores["recall"].append(recall_score(y_test, y_pred))
+        if "roc-auc" in self.metrics:
+            scores["roc-auc"].append(roc_auc_score(y_test, y_pred_prob))
+            
+        return scores
+    
+    # def train_pipeline(self):
+    #     '''
+    #     This function orchastrate all the steps in the model_trainer process
+        
+    #     This function return best model, its test_score and save the best_model with its metric in the artifacts file
+    #     '''
+        
+    #     for i, model in enumerate(self.models):
+    #         param_grid = self.params[i]
+            
+    #         #
+            
+        
+        
     
     
     # -- HELPER -- 
@@ -161,7 +189,7 @@ class ModelTrainer:
     def init_model(self, model_name:str, params: dict):
          
         if model_name == "logistic_regression":
-            base = LogisticRegression(verbose=1, n_jobs=-1)
+            base = LogisticRegression(verbose=1, n_jobs=-1, random_state=self.random_state)
             base.set_params(**params)
             return base
         elif model_name == "random_forest":

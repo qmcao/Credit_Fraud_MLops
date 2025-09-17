@@ -49,33 +49,49 @@ The pipeline consists of the following key stages:
 
 ## Project Structure
 ```
-Credit_Fraud_MLops/
-├── artifacts/
-│   ├── model.pkl
-│   ├── preprocessor.pkl
-│   └── ...
-├── notebook/
-│   ├── 1. EDA FRAUD APPLICATION .ipynb
-│   ├── 2. MODEL TRAINING.IPYNB
-│   └── 3. MODEL PERFORMANCE MONITERING..ipynb
+mlops-poc/
+│
+├── conf/                          # Configs (no hardcoding in code)
+│   ├── data.yaml                  # data source, sample size, paths
+│   ├── features.yaml              # feature selection / transformations
+│   └── train.yaml                 # training params (model, hyperparams)
+│
 ├── src/
-│   ├── components/
+│   ├── components/                #  
 │   │   ├── data_ingestion.py
 │   │   ├── data_transformation.py
-│   │   └── model_trainer.py
-│   ├── pipeline/
-│   │   ├── predict_pipeline.py
-│   │   └── train_pipeline.py
-│   ├── __init__.py
-│   ├── exception.py
-│   ├── logger.py
-│   └── utils.py
-├── templates/
-│   └── home.html
-├── application.py
-├── Dockerfile
-├── requirements.txt
-└── setup.py
+│   │   ├── model_training.py
+│   │   ├── model_evaluator.py     # (optional) eval logic
+│   │   └── __init__.py
+│   │
+│   ├── pipelines/                 # Orchestrators (link components)
+│   │   ├── train_pipeline.py      # main orchestrator (end-to-end run)
+│   │   └── retrain_trigger.py     # (future) schedule/trigger script
+│   │
+│   └── utils/                     # Shared helpers
+│       ├── utils.py               # load/save data, artifacts
+│       ├── logger.py              # standard logging setup
+│       └── mlflow_utils.py        # wrappers for experiment tracking
+│
+├── artifacts/                     # Local outputs (replace w/ S3 later)
+│   ├── raw/                       # ingested data
+│   ├── processed/                 # transformed data
+│   ├── models/                    # trained models
+│   ├── metrics/                   # evaluation metrics
+│   └── logs/                      # logs, checkpoints
+│
+├── tests/                         # Testing
+│   ├── test_components.py         # unit tests for ingestion/transform
+│   └── test_pipeline_smoke.py     # integration test (tiny dataset)
+│
+├── docker/                        # container setup
+│   └── Dockerfile                 # single image for running pipeline
+│
+├── requirements.txt               # Python deps
+├── Makefile                       # handy shortcuts (make train, make test)
+├── README.md                      # project overview + how to run
+└── .gitignore
+
 ```
 
 ## Getting Started
