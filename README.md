@@ -117,7 +117,7 @@ The application will be available at `http://127.0.0.1:8080`. You can send POST 
 
 
 ## 5. Demo
-![Demo](diagrams/credit-mlops-demo.gif)
+![Demo](diagrams/credit-mlops-demo-800x500.gif)
 
 ## 6. Future Improvements
 - Implement a monitoring system to detect model drift and trigger retraining.
