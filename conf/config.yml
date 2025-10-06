@@ -1,4 +1,4 @@
-
+ # training params (model, hyperparams)
 
 global:
   random_state: 42
@@ -26,3 +26,6 @@ metric:
   - 'accuracy'
   - 'roc-auc'
 
+output:
+  model: 'artifacts/models'
+  metrics: 'artifacts/metrics'

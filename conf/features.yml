@@ -1,0 +1,43 @@
+ # feature selection / transformations
+
+
+
+features:
+  missing_thres: 0.7
+  bad_cols: [
+        "prev_address_months_count", "current_address_months_count",
+        "intended_balcon_amount", "bank_months_count",
+        "session_length_in_minutes", "device_distinct_emails_8w",
+    ]
+  num_cols: [
+        "income", "name_email_similarity", "current_address_months_count",
+        "customer_age", "days_since_request", "zip_count_4w", "velocity_6h",
+        "velocity_24h", "velocity_4w", "bank_branch_count_8w",
+        "date_of_birth_distinct_emails_4w", "credit_risk_score",
+        "bank_months_count", "proposed_credit_limit",
+        "session_length_in_minutes", "device_distinct_emails_8w", "month",
+    ]
+  cat_cols: [
+        "payment_type", "employment_status", "housing_status", "source",
+        "device_os", "email_is_free", "phone_home_valid",
+        "phone_mobile_valid", "has_other_cards", "foreign_request",
+        "keep_alive_session",
+    ]
+  
+  response_col : 'fraud_bool'
+  
+
+strategy:
+  impute:
+    num_strat: 'median'
+    cat_strat: 'most_frequent'
+  encode:
+    unknow_strat: 'ignore'
+    sparse_output: false
+
+  scaler: 'robust-scaler'
+
+output:
+  root: 'artifacts/processed'
+  format: 'csv'
+  overwrite: false   

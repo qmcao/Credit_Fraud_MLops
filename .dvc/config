@@ -1,4 +1,0 @@
-[core]
-    remote = storage
-['remote "storage"']
-    url = s3://ml-feature-store-029552764749/credit_fraud

@@ -1,69 +1,44 @@
 import numpy as np 
 import pandas as pd
+import yaml
 from sklearn.impute import SimpleImputer 
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler, OneHotEncoder, StandardScaler
-from dataclasses import dataclass, field
-from src.logger import logging
+from src.utils.logger import logging
+import os
+import joblib
 
 
-
-@dataclass
-class DataTransformationConfig:
-    # Missing threshold and features
-    drop_missing_threshold: float = 0.70
-    negative_to_nan_cols: list[str] = field(default_factory=lambda:[
-        "prev_address_months_count", "current_address_months_count",
-        "intended_balcon_amount", "bank_months_count",
-        "session_length_in_minutes", "device_distinct_emails_8w",
-    ])
-    
-    # Feature groups
-    numerical_features: list[str] = field(default_factory=lambda:[
-        "income", "name_email_similarity", "current_address_months_count",
-        "customer_age", "days_since_request", "zip_count_4w", "velocity_6h",
-        "velocity_24h", "velocity_4w", "bank_branch_count_8w",
-        "date_of_birth_distinct_emails_4w", "credit_risk_score",
-        "bank_months_count", "proposed_credit_limit",
-        "session_length_in_minutes", "device_distinct_emails_8w", "month",
-    ])
-    categorical_features: list[str] = field(default_factory=lambda: [
-        "payment_type", "employment_status", "housing_status", "source",
-        "device_os", "email_is_free", "phone_home_valid",
-        "phone_mobile_valid", "has_other_cards", "foreign_request",
-        "keep_alive_session",
-    ])
-    
-     # Impute strategies
-    numeric_impute_strategy: str = "median"
-    categorical_impute_strategy: str = "most_frequent"
-    
-    # Enc/Scale params
-    onehot_handle_unknown: str = "ignore"   # important for inference robustness
-    onehot_sparse_output: bool = False
-    scaler: RobustScaler = RobustScaler() 
-    
-    # response column
-    response_column: str = "fraud_bool"
-       
+# Use to produce preprocessor obj
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 class DataTransformation:
     def __init__(self):
         '''
         Init data transformation config for the class
         '''
-        self.transformation_config = DataTransformationConfig()
+        self.config = self.load_config()
+
+        # Features
+        self.res_col = self.config['features']['response_col']
+        self.bad_cols = self.config['features']['bad_cols']
+        self.missing_thres = self.config['features']['missing_thres']
+        self.num_features = self.config['features']['num_cols']
+        self.cat_features = self.config['features']['cat_cols']
+        
+        # Strategy
+        self.scaling_strat = self.config['strategy']['scaler']
+        self.num_impute_strat = self.config['strategy']['impute']['num_strat']
+        self.cat_impute_strat = self.config['strategy']['impute']['cat_strat']
+        self.encode_unknown = self.config['strategy']['encode']['unknow_strat']
+        self.encode_sparse = self.config['strategy']['encode']['sparse_output']
+        
+        # output_path
+        self.out_path = self.config['output']['root']
         
     # --- step ---
-    def get_response_column(self, train_data: pd.DataFrame, test_data: pd.DataFrame):
-        """
-        Return the response variable with its original index
-        """
-        res_col = self.transformation_config.response_column
-        
-        return train_data[res_col], test_data[res_col]
-        
-        
+
     def drop_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Identifies columns in a dataframe with more than 70% missing values.
@@ -72,8 +47,8 @@ class DataTransformation:
         """
         
         # Convert negative value to nan and calculate the proportion of missing values for each column
-        columns_to_check = self.transformation_config.negative_to_nan_cols
-        threshold = self.transformation_config.drop_missing_threshold
+        columns_to_check = self.bad_cols
+        threshold = self.missing_thres
         train_data[columns_to_check] = train_data[columns_to_check].where(train_data[columns_to_check] >= 0, np.nan)
         missing_ratio = train_data.isnull().sum() / len(train_data)        
         columns_to_drop = missing_ratio[missing_ratio > threshold].index.tolist()
@@ -118,7 +93,7 @@ class DataTransformation:
         # Init encoder object and fit on training set
         train = train_data[feature_list]
         test = test_data[feature_list]
-        encoder = OneHotEncoder(sparse_output=False)
+        encoder = OneHotEncoder(sparse_output=self.encode_sparse, handle_unknown=self.encode_unknown)
         encoder.fit(train_data[feature_list])
         
         # Transform on both training and test data
@@ -142,7 +117,9 @@ class DataTransformation:
         This function scale the numerical variables using Robust Scaler due to large number of outliers
         '''
         # Init scaler object and fit on training set
-        scaler = self.transformation_config.scaler
+        scaler = None
+        if self.scaling_strat == 'robust-scaler':
+            scaler = RobustScaler()
         train = train_data[feature_list]
         test = test_data[feature_list]
         scaler.fit(train)
@@ -162,9 +139,11 @@ class DataTransformation:
         return train_data_scaled, test_data_scaled
         
     
-    def clean_data(self, train_data: pd.DataFrame, test_data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    def transform_data(self, train_path: str, test_path: str):
         """
-        Clean train and test datasets by:
+        Function to orchestrate the data transformation process
+        
+        Transformed train and test datasets by:
         
         1. Dropping columns with >70% missing values.
         2. Imputing remaining missing values 
@@ -174,6 +153,10 @@ class DataTransformation:
 
         Returns cleaned train and test DataFrames.
         """
+        # Read from artifacts folder
+        train_data = pd.read_csv(train_path)
+        test_data = pd.read_csv(test_path)
+        
         # Get y_train, y_test
         y_train, y_test = self.get_response_column(train_data, test_data)
         
@@ -182,19 +165,79 @@ class DataTransformation:
         train, test = self.drop_data(train_data, test_data)     
         
         # Impute missing columns
-        train_num, test_num = self.impute_data(train, test, self.transformation_config.numerical_features,
-                                                                       self.transformation_config.numeric_impute_strategy)
-        train_cat, test_cat = self.impute_data(train, test, self.transformation_config.categorical_features,
-                                                                        self.transformation_config.categorical_impute_strategy)
+        train_num, test_num = self.impute_data(train, test, self.num_features, self.num_impute_strat)
+        train_cat, test_cat = self.impute_data(train, test, self.cat_features, self.cat_impute_strat)
         
         # Encoded categorical columns, scale numerical
-        encoded_train_cat, encoded_test_cat = self.encode_cat_cols(train_cat, test_cat,self.transformation_config.categorical_features)
-        scaled_train_num, scaled_test_num = self.scale_num_cols(train_num, test_num, self.transformation_config.numerical_features)
+        encoded_train_cat, encoded_test_cat = self.encode_cat_cols(train_cat, test_cat,self.cat_features)
+        scaled_train_num, scaled_test_num = self.scale_num_cols(train_num, test_num, self.num_features)
         
         # Concat cleaned numerical and categorical data to return 
-        cleaned_train = pd.concat([encoded_train_cat, scaled_train_num, y_train], axis=1)
-        cleaned_test = pd.concat([encoded_test_cat, scaled_test_num, y_test], axis=1) 
+        transformed_train = pd.concat([encoded_train_cat, scaled_train_num, y_train], axis=1)
+        transformed_test = pd.concat([encoded_test_cat, scaled_test_num, y_test], axis=1) 
         
-        return cleaned_train, cleaned_test
+        # Save the dataframes as CSV files in the artifacts/processed folder
+        os.makedirs(self.out_path, exist_ok=True) # create folder if not exist
+        transformed_train_out_path = os.path.join(self.out_path, 'train.csv')
+        transformed_test_out_path = os.path.join(self.out_path, 'test.csv')
+        transformed_train.to_csv(transformed_train_out_path, index=False, header=True)
+        transformed_test.to_csv(transformed_test_out_path, index=False, header=True)      
+        
+        return (transformed_train_out_path, 
+                transformed_test_out_path)
+
     
     
+    
+    
+    # -- helper --
+    def load_config(self):
+        with open('conf/features.yml', 'r') as config_file:
+            return yaml.safe_load(config_file)
+        
+        
+    def get_response_column(self, train_data: pd.DataFrame, test_data: pd.DataFrame):
+        """
+        Return the response variable with its original index
+        """
+        res_col = self.res_col
+        return train_data[res_col], test_data[res_col]
+    
+    
+    def build_preprocessor(self):
+        """
+        Build a scikit-learn preprocessor (ColumnTransformer) based on the config.
+        This preprocessor can be used in a model pipeline.
+        """
+        # ---- numerical pipeline ----
+        num_pipeline = Pipeline(steps=[
+            ("imputer", SimpleImputer(strategy=self.num_impute_strat)),
+            ("scaler", RobustScaler() if self.scaling_strat == "robust-scaler" else StandardScaler())
+        ])
+
+        # ---- categorical pipeline ----
+        cat_pipeline = Pipeline(steps=[
+            ("imputer", SimpleImputer(strategy=self.cat_impute_strat)),
+            ("encoder", OneHotEncoder(
+                handle_unknown=self.encode_unknown,
+                sparse_output=self.encode_sparse
+            ))
+        ])
+
+        # ---- combine ----
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ("num", num_pipeline, self.num_features),
+                ("cat", cat_pipeline, self.cat_features)
+            ]
+        )
+        return preprocessor    
+    
+    def save_preprocessor(self, preprocessor, filename="preprocessor.pkl"):
+        """
+        Save the preprocessor object into the artifacts folder.
+        """
+        os.makedirs(self.out_path, exist_ok=True)
+        preprocessor_path = os.path.join(self.out_path, filename)
+        joblib.dump(preprocessor, preprocessor_path)
+        return preprocessor_path
