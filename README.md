@@ -11,20 +11,20 @@
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Project Structure](#project-structure)
-3. [Pipeline / Workflow](#work-flow)
+3. [Workflow](#workflow)
 4. [How to Run](#how-to-run)
 5. [Demo](#demo)
-6. [Future Improvements](#future-work)
+6. [Future Improvements](#future-improvements)
 7. [Author, Contacts](#contact)
 
 
-## 1. Project Overview
+## Project Overview
 
 **Credit fraud** remains a major challenge in the financial industry, requiring constant updates to keep detection systems effective against evolving fraud patterns.
 
 This project aims to develop a **proof-of-concept Machine Learning Operations (MLOps) pipeline** that automates and streamlines the credit fraud detection process, reducing manual intervention and improving model adaptability over time.
 
-## 2. Project Structure
+## Project Structure
 ```
 mlops-root/
 │
@@ -70,14 +70,14 @@ mlops-root/
 
 ```
 
-## 3. Pipeline and Workflows
+## Workflow
 
 ![My Diagram](diagrams/credit-mlops.drawio.svg)
 
 
 
 
-## 4. How to Run
+## How to Run
 
 #### Prerequisites
 - Python 3.8 or higher
@@ -116,17 +116,21 @@ python application.py
 The application will be available at `http://127.0.0.1:8080`. You can send POST requests to the `/predict` endpoint with JSON data to get fraud predictions.
 
 
-## 5. Demo
+## Demo
 ![Demo](diagrams/credit-mlops-demo-800x500.gif)
 
-## 6. Future Improvements
+## Future Improvements
 - Implement a monitoring system to detect model drift and trigger retraining.
 - Explore more advanced feature engineering techniques.
 - Expand the API to provide more detailed explanations for fraud predictions.
 
-#### Contributing
+## Contact
+Minh Cao - [qmcao@uci.edu] - [[LinkedIn](https://www.linkedin.com/in/minhcao-uci/)]
+
+
+## Contributing
+
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
-## 7. Contact
-Minh Cao - [qmcao@uci.edu] - [[LinkedIn](https://www.linkedin.com/in/minhcao-uci/)]
+
 
