@@ -117,18 +117,16 @@ The application will be available at `http://127.0.0.1:8080`. You can send POST 
 
 
 ## 5. Demo
+![Demo](diagrams/credit-mlops-demo.gif)
 
 ## 6. Future Improvements
 - Implement a monitoring system to detect model drift and trigger retraining.
 - Explore more advanced feature engineering techniques.
 - Expand the API to provide more detailed explanations for fraud predictions.
 
-## Contributing
+#### Contributing
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
-## License
-
-
-## Contact
+## 7. Contact
 Minh Cao - [qmcao@uci.edu] - [[LinkedIn](https://www.linkedin.com/in/minhcao-uci/)]
 
