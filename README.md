@@ -33,12 +33,16 @@ mlops-root/
 │   ├── features.yaml              # feature selection / transformations
 │   └── config.yaml                 # training params (model, hyperparams)
 │
+├── experiments                     # Experiement process ( EDA, Model experiment)
+|   ├── 1.EDA                       # EDA for the dataset
+|   └── 2.MODEL TRAINING            # Model training experiement 
+│
+│
 ├── src/
 │   ├── components/                # components in automated ML pipeline
 │   │   ├── data_extraction.py
 │   │   ├── data_transformation.py
-│   │   ├── model_training.py
-│   │   ├── model_validation.py    
+│   │   ├── model_training.py 
 │   │   └── __init__.py
 │   │
 │   ├── pipelines/                 # Orchestrators (link components)
@@ -66,6 +70,7 @@ mlops-root/
 ├── requirements.txt               # Python deps
 ├── Makefile                       # handy shortcuts (make train, make test)
 ├── README.md                      # project overview + how to run
+├── datasheet_information.pdf      # Information about the dataset
 └── .gitignore
 
 ```
