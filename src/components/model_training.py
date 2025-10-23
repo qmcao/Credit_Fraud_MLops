@@ -243,7 +243,7 @@ class ModelTrainer:
     def init_model(self, model_name:str, params: dict):
          
         if model_name == "logistic_regression":
-            base = LogisticRegression(verbose=0, n_jobs=-1, random_state=self.random_state)
+            base = LogisticRegression(verbose=1, n_jobs=-1, random_state=self.random_state)
             base.set_params(**params)
             return base
         elif model_name == "random_forest":

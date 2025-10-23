@@ -10,13 +10,13 @@ DEBUG = False
 def main():
     if DEBUG == False:
         
-        #Ingestion process
+        #Ingestion process ----------------------------
         logging.info("Init Ingestion process")
         ingestion = DataIngestion()
         train_path, test_path = ingestion.init_data_ingestion()
         logging.info("Ingestion process completed sucessfully")
         
-        # Data transformation process
+        # Data transformation process --------------------------
         logging.info("Init Data transformation process")
         transform = DataTransformation()
         processed_train_path, processed_test_path = transform.transform_data(train_path, test_path)
@@ -25,7 +25,7 @@ def main():
         
         logging.info("Data transformation process complete")
         
-        # Model training process
+        # Model training process ------------------------------
         logging.info("Init Model training process")
         model_trainer = ModelTrainer()
         model_file_path, metrics_file_path = model_trainer.main(processed_train_path, processed_test_path)
