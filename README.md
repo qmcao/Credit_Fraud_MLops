@@ -133,4 +133,5 @@ Minh Cao - [qmcao@uci.edu] - [[LinkedIn](https://www.linkedin.com/in/minhcao-uci
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
 
-
+## Reference
+https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning
